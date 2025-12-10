@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" 
+         id="WebApp_ID" 
+         version="3.1">
+  
+  <display-name>WarehouseManagementSystem</display-name>
+  
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- Warehouse Servlet -->
+  <servlet>
+    <servlet-name>WarehouseServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.WarehouseServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>WarehouseServlet</servlet-name>
+    <url-pattern>/api/warehouse</url-pattern>
+  </servlet-mapping>
+  
+  <!-- Inventory Servlet -->
+  <servlet>
+    <servlet-name>InventoryServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.InventoryServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InventoryServlet</servlet-name>
+    <url-pattern>/api/inventory</url-pattern>
+  </servlet-mapping>
+
+  <!-- Product Servlet -->
+<servlet>
+    <servlet-name>ProductServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.ProductServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>ProductServlet</servlet-name>
+    <url-pattern>/api/product</url-pattern>
+</servlet-mapping>
+
+<!-- Location Servlet -->
+<servlet>
+    <servlet-name>LocationServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.LocationServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>LocationServlet</servlet-name>
+    <url-pattern>/api/location</url-pattern>
+</servlet-mapping>
+
+<!-- Inbound Servlet -->
+<servlet>
+    <servlet-name>InboundServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.InboundServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>InboundServlet</servlet-name>
+    <url-pattern>/api/inbound</url-pattern>
+</servlet-mapping>
+
+<!-- Outbound Servlet -->
+<servlet>
+    <servlet-name>OutboundServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.OutboundServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>OutboundServlet</servlet-name>
+    <url-pattern>/api/outbound</url-pattern>
+</servlet-mapping>
+
+<!-- Dashboard Servlet -->
+<servlet>
+    <servlet-name>DashboardServlet</servlet-name>
+    <servlet-class>com.warehouse.controller.DashboardServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/api/dashboard</url-pattern>
+</servlet-mapping>
+
+<!-- 2. 跨域支持过滤器 -->
+<filter>
+    <filter-name>CorsFilter</filter-name>
+    <filter-class>com.warehouse.filter.CorsFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>CorsFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+<filter>
+    <filter-name>TestFilter</filter-name>
+    <filter-class>com.warehouse.filter.TestFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>TestFilter</filter-name>
+    <url-pattern>/test-encoding.jsp</url-pattern>
+</filter-mapping>
+
+</web-app>

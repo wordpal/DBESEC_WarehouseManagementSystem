@@ -1,0 +1,389 @@
+package com.warehouse.controller;
+
+import com.google.gson.Gson;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
+
+@WebServlet("/api/warehouse-test")
+public class WarehouseTestServlet extends HttpServlet {
+    
+    // 模拟数据库
+    private static Map<Integer, Map<String, Object>> warehouseData = new HashMap<>();
+    private static int idCounter = 1;
+    
+    static {
+        // 初始化测试数据
+        Map<String, Object> warehouse1 = new HashMap<>();
+        warehouse1.put("warehouseId", 1);
+        warehouse1.put("warehouseCode", "WH_BJ");
+        warehouse1.put("warehouseName", "北京中央仓库");
+        warehouse1.put("country", "China");
+        warehouse1.put("address", "北京市海淀区科技园路1号");
+        warehouse1.put("contactPerson", "张三");
+        warehouse1.put("contactPhone", "13800138000");
+        warehouse1.put("email", "warehouse@company.com");
+        warehouse1.put("capacity", 50000);
+        warehouse1.put("usedCapacity", 32000);
+        warehouse1.put("isActive", true);
+        warehouse1.put("remark", "主要仓库，存储核心物料");
+        warehouse1.put("createTime", "2024-01-01 10:00:00");
+        warehouse1.put("updateTime", "2024-12-10 14:30:00");
+        
+        Map<String, Object> warehouse2 = new HashMap<>();
+        warehouse2.put("warehouseId", 2);
+        warehouse2.put("warehouseCode", "WH_SH");
+        warehouse2.put("warehouseName", "上海仓库");
+        warehouse2.put("country", "China");
+        warehouse2.put("address", "上海市浦东新区");
+        warehouse2.put("contactPerson", "李四");
+        warehouse2.put("contactPhone", "13900139000");
+        warehouse2.put("email", "sh@company.com");
+        warehouse2.put("capacity", 30000);
+        warehouse2.put("usedCapacity", 18000);
+        warehouse2.put("isActive", true);
+        warehouse2.put("remark", "华东地区仓库");
+        warehouse2.put("createTime", "2024-02-01 09:00:00");
+        warehouse2.put("updateTime", "2024-12-05 10:20:00");
+        
+        Map<String, Object> warehouse3 = new HashMap<>();
+        warehouse3.put("warehouseId", 3);
+        warehouse3.put("warehouseCode", "WH_US");
+        warehouse3.put("warehouseName", "美国仓库");
+        warehouse3.put("country", "USA");
+        warehouse3.put("address", "New York, USA");
+        warehouse3.put("contactPerson", "John Smith");
+        warehouse3.put("contactPhone", "+1-555-1234567");
+        warehouse3.put("email", "us@company.com");
+        warehouse3.put("capacity", 80000);
+        warehouse3.put("usedCapacity", 45000);
+        warehouse3.put("isActive", false);
+        warehouse3.put("remark", "海外仓库");
+        warehouse3.put("createTime", "2024-03-01 14:00:00");
+        warehouse3.put("updateTime", "2024-11-20 16:45:00");
+        
+        warehouseData.put(1, warehouse1);
+        warehouseData.put(2, warehouse2);
+        warehouseData.put(3, warehouse3);
+        idCounter = 4;
+    }
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        
+        String action = request.getParameter("action");
+        System.out.println("GET请求，action: " + action);
+        System.out.println("所有参数:");
+        Enumeration<String> params = request.getParameterNames();
+        while (params.hasMoreElements()) {
+            String paramName = params.nextElement();
+            System.out.println(paramName + " = " + request.getParameter(paramName));
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            if ("getAll".equals(action)) {
+                handleGetAll(request, result);
+            } else if ("getById".equals(action)) {
+                handleGetById(request, result);
+            } else if ("add".equals(action)) {
+                handleAdd(request, result);
+            } else if ("update".equals(action)) {
+                handleUpdate(request, result);
+            } else if ("disable".equals(action)) {
+                handleDisable(request, result);
+            } else if ("enable".equals(action)) {
+                handleEnable(request, result);
+            } else if ("delete".equals(action)) {
+                handleDelete(request, result);
+            } else {
+                result.put("code", 500);
+                result.put("msg", "未知操作: " + action);
+                result.put("data", null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("code", 500);
+            result.put("msg", "服务器错误: " + e.getMessage());
+            result.put("data", null);
+        }
+        
+        // 输出JSON响应
+        PrintWriter out = response.getWriter();
+        out.write(new Gson().toJson(result));
+        out.flush();
+    }
+    
+    private void handleGetAll(HttpServletRequest request, Map<String, Object> result) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        // 获取查询参数
+        String name = request.getParameter("warehouseName");
+        String country = request.getParameter("country");
+        String isActiveStr = request.getParameter("isActive");
+        
+        System.out.println("查询参数 - name: " + name + ", country: " + country + ", isActive: " + isActiveStr);
+        
+        for (Map<String, Object> warehouse : warehouseData.values()) {
+            boolean match = true;
+            
+            // 名称过滤
+            if (name != null && !name.trim().isEmpty()) {
+                String warehouseName = (String) warehouse.get("warehouseName");
+                if (warehouseName == null || !warehouseName.contains(name)) {
+                    match = false;
+                }
+            }
+            
+            // 国家过滤
+            if (country != null && !country.trim().isEmpty()) {
+                String warehouseCountry = (String) warehouse.get("country");
+                if (warehouseCountry == null || !warehouseCountry.equals(country)) {
+                    match = false;
+                }
+            }
+            
+            // 状态过滤
+            if (isActiveStr != null && !isActiveStr.trim().isEmpty()) {
+                boolean isActive = Boolean.parseBoolean(isActiveStr);
+                boolean warehouseActive = (boolean) warehouse.get("isActive");
+                if (warehouseActive != isActive) {
+                    match = false;
+                }
+            }
+            
+            if (match) {
+                list.add(new HashMap<>(warehouse));
+            }
+        }
+        
+        result.put("code", 200);
+        result.put("msg", "success");
+        result.put("data", list);
+        result.put("count", list.size());
+    }
+    
+    private void handleGetById(HttpServletRequest request, Map<String, Object> result) {
+        String idStr = request.getParameter("id");
+        System.out.println("获取ID: " + idStr);
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            result.put("code", 400);
+            result.put("msg", "ID不能为空");
+            result.put("data", null);
+            return;
+        }
+        
+        try {
+            int id = Integer.parseInt(idStr);
+            Map<String, Object> warehouse = warehouseData.get(id);
+            
+            if (warehouse == null) {
+                result.put("code", 404);
+                result.put("msg", "仓库不存在");
+                result.put("data", null);
+            } else {
+                result.put("code", 200);
+                result.put("msg", "success");
+                result.put("data", warehouse);
+            }
+        } catch (NumberFormatException e) {
+            result.put("code", 400);
+            result.put("msg", "ID格式错误");
+            result.put("data", null);
+        }
+    }
+    
+    private void handleAdd(HttpServletRequest request, Map<String, Object> result) {
+        System.out.println("处理新增请求");
+        
+        Map<String, Object> warehouse = new HashMap<>();
+        warehouse.put("warehouseId", idCounter);
+        warehouse.put("warehouseCode", request.getParameter("warehouseCode"));
+        warehouse.put("warehouseName", request.getParameter("warehouseName"));
+        warehouse.put("country", request.getParameter("country"));
+        warehouse.put("address", request.getParameter("address"));
+        warehouse.put("contactPerson", request.getParameter("contactPerson"));
+        warehouse.put("contactPhone", request.getParameter("contactPhone"));
+        warehouse.put("email", request.getParameter("email"));
+        warehouse.put("capacity", parseInteger(request.getParameter("capacity")));
+        warehouse.put("usedCapacity", 0);
+        warehouse.put("isActive", parseBoolean(request.getParameter("isActive")));
+        warehouse.put("remark", request.getParameter("remark"));
+        warehouse.put("createTime", new Date().toString());
+        warehouse.put("updateTime", new Date().toString());
+        
+        warehouseData.put(idCounter, warehouse);
+        idCounter++;
+        
+        result.put("code", 200);
+        result.put("msg", "添加成功");
+        result.put("data", warehouse);
+    }
+    
+    private void handleUpdate(HttpServletRequest request, Map<String, Object> result) {
+        String idStr = request.getParameter("id");
+        System.out.println("处理更新请求，ID: " + idStr);
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            result.put("code", 400);
+            result.put("msg", "ID不能为空");
+            result.put("data", null);
+            return;
+        }
+        
+        try {
+            int id = Integer.parseInt(idStr);
+            Map<String, Object> warehouse = warehouseData.get(id);
+            
+            if (warehouse == null) {
+                result.put("code", 404);
+                result.put("msg", "仓库不存在");
+                result.put("data", null);
+                return;
+            }
+            
+            // 更新字段
+            updateIfNotNull(warehouse, "warehouseCode", request.getParameter("warehouseCode"));
+            updateIfNotNull(warehouse, "warehouseName", request.getParameter("warehouseName"));
+            updateIfNotNull(warehouse, "country", request.getParameter("country"));
+            updateIfNotNull(warehouse, "address", request.getParameter("address"));
+            updateIfNotNull(warehouse, "contactPerson", request.getParameter("contactPerson"));
+            updateIfNotNull(warehouse, "contactPhone", request.getParameter("contactPhone"));
+            updateIfNotNull(warehouse, "email", request.getParameter("email"));
+            
+            String capacityStr = request.getParameter("capacity");
+            if (capacityStr != null && !capacityStr.trim().isEmpty()) {
+                warehouse.put("capacity", Integer.parseInt(capacityStr));
+            }
+            
+            String isActiveStr = request.getParameter("isActive");
+            if (isActiveStr != null && !isActiveStr.trim().isEmpty()) {
+                warehouse.put("isActive", Boolean.parseBoolean(isActiveStr));
+            }
+            
+            updateIfNotNull(warehouse, "remark", request.getParameter("remark"));
+            warehouse.put("updateTime", new Date().toString());
+            
+            result.put("code", 200);
+            result.put("msg", "更新成功");
+            result.put("data", warehouse);
+            
+        } catch (NumberFormatException e) {
+            result.put("code", 400);
+            result.put("msg", "ID格式错误");
+            result.put("data", null);
+        }
+    }
+    
+    private void handleDisable(HttpServletRequest request, Map<String, Object> result) {
+        handleStatusChange(request, result, false);
+    }
+    
+    private void handleEnable(HttpServletRequest request, Map<String, Object> result) {
+        handleStatusChange(request, result, true);
+    }
+    
+    private void handleStatusChange(HttpServletRequest request, Map<String, Object> result, boolean newStatus) {
+        String idStr = request.getParameter("id");
+        String action = newStatus ? "启用" : "禁用";
+        System.out.println("处理" + action + "请求，ID: " + idStr);
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            result.put("code", 400);
+            result.put("msg", "ID不能为空");
+            result.put("data", null);
+            return;
+        }
+        
+        try {
+            int id = Integer.parseInt(idStr);
+            Map<String, Object> warehouse = warehouseData.get(id);
+            
+            if (warehouse == null) {
+                result.put("code", 404);
+                result.put("msg", "仓库不存在");
+                result.put("data", null);
+                return;
+            }
+            
+            warehouse.put("isActive", newStatus);
+            warehouse.put("updateTime", new Date().toString());
+            
+            result.put("code", 200);
+            result.put("msg", action + "成功");
+            result.put("data", warehouse);
+            
+        } catch (NumberFormatException e) {
+            result.put("code", 400);
+            result.put("msg", "ID格式错误");
+            result.put("data", null);
+        }
+    }
+    
+    private void handleDelete(HttpServletRequest request, Map<String, Object> result) {
+        String idStr = request.getParameter("id");
+        System.out.println("处理删除请求，ID: " + idStr);
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            result.put("code", 400);
+            result.put("msg", "ID不能为空");
+            result.put("data", null);
+            return;
+        }
+        
+        try {
+            int id = Integer.parseInt(idStr);
+            Map<String, Object> removed = warehouseData.remove(id);
+            
+            if (removed == null) {
+                result.put("code", 404);
+                result.put("msg", "仓库不存在");
+                result.put("data", null);
+            } else {
+                result.put("code", 200);
+                result.put("msg", "删除成功");
+                result.put("data", null);
+            }
+        } catch (NumberFormatException e) {
+            result.put("code", 400);
+            result.put("msg", "ID格式错误");
+            result.put("data", null);
+        }
+    }
+    
+    private void updateIfNotNull(Map<String, Object> map, String key, String value) {
+        if (value != null && !value.trim().isEmpty()) {
+            map.put(key, value);
+        }
+    }
+    
+    private int parseInteger(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+    private boolean parseBoolean(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(str);
+    }
+}
